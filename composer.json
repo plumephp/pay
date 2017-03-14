@@ -1,4 +1,9 @@
 {
+    "name": "plumephp/pay",
+    "description": "pay lib for plumephp.",
+    "type": "library",
+    "license": "BSD-2-Clause",
+    "minimum-stability": "dev",
     "require": {
         "plumephp/plume": "dev-master"
     },
