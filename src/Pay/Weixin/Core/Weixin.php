@@ -3,24 +3,24 @@
  * @author huazai
  */
 
-namespace Pay\Service;
+namespace Plume\Pay\Weixin\Core;
 
+use Plume\Pay\Application;
 
-class WeixinService
+class Weixin extends Application
 {
 	/**
-	 * 微信配置文件
-	 * @var
+	 * 微信支付配置信息
+	 * @var array|null
 	 */
-	private $wxConfig;
-
-	/**
-	 * 构造函数
-	 * WeixinService constructor.
-	 * @param $wxConfig
-	 */
-	public function __construct($wxConfig) {
-		$this->wxConfig = $wxConfig;
+	private $config;
+	public function __construct($config)
+	{
+		parent::__construct();
+		if (empty($config)) {
+			throw new \Exception('weixin config is empty!!!');
+		}
+		$this->config = $config;
 	}
 
 	/**
@@ -34,17 +34,22 @@ class WeixinService
 	 */
 	public function transfers($openid, $amount, $desc, $checkName='NO_CHECK', $reUserName='') {
 		$obj = array();
-		$obj['mch_appid']        = $this->wxConfig['app_id'];  //微信分配的公众账号ID（企业号corpid即为此appId）
-		$obj['mchid']            = $this->wxConfig['mch_id'];  //微信支付分配的商户号
-		$obj['partner_trade_no'] = $this->wxConfig['mch_id'] . date('YmdHis') . rand(1000, 9999);  //商户订单号（每个订单号必须唯一）
+		$obj['mch_appid']        = $this->config['app_id'];  //微信分配的公众账号ID（企业号corpid即为此appId）
+		$obj['mchid']            = $this->config['mch_id'];  //微信支付分配的商户号
+		$obj['partner_trade_no'] = $this->config['mch_id'] . date('YmdHis') . rand(1000, 9999);  //商户订单号（每个订单号必须唯一）
 		$obj['openid']           = $openid;
 		$obj['amount']           = $amount;
 		$obj['desc']             = $desc;
-		$obj['spbill_create_ip'] = $this->wxConfig['client_ip']; //调用接口的机器Ip地址
+		$obj['spbill_create_ip'] = $this->config['client_ip']; //调用接口的机器Ip地址
 		$obj['check_name']       = $checkName;
 		$obj['re_user_name']     = $reUserName;
 		$url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+
+		$this->debug(__FUNCTION__, $obj);
+
 		$result = $this->handle($url, $obj);
+
+		$this->debug(__FUNCTION__, $result);
 
 		return (array)simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
@@ -67,15 +72,15 @@ class WeixinService
 		 * mch_id+yyyymmdd+10位一天内不能重复的数字。
 		 * 接口根据商户订单号支持重入，如出现超时可再调用。
 		 */
-		$obj['mch_billno']   = $this->wxConfig['mch_id'] . date('YmdHis') . rand(1000, 9999);
+		$obj['mch_billno']   = $this->config['mch_id'] . date('YmdHis') . rand(1000, 9999);
 		// 微信支付分配的商户号
-		$obj['mch_id']       = $this->wxConfig['mch_id'];
+		$obj['mch_id']       = $this->config['mch_id'];
 		/**
 		 * 微信分配的公众账号ID（企业号corpid即为此appId）。
 		 * 接口传入的所有appid应该为公众号的appid（在mp.weixin.qq.com申请的），
 		 * 不能为APP的appid（在open.weixin.qq.com申请的）。
 		 */
-		$obj['wxappid']      = $this->wxConfig['app_id'];
+		$obj['wxappid']      = $this->config['app_id'];
 		$obj['send_name']    = $sender;
 		$obj['re_openid']    = $openid;
 		$obj['total_amount'] = $amount;
@@ -83,12 +88,17 @@ class WeixinService
 		$obj['total_num']    = 1;
 		$obj['wishing']      = $wishing;
 		// 调用接口的机器Ip地址
-		$obj['client_ip']    = $this->wxConfig['client_ip'];
+		$obj['client_ip']    = $this->config['client_ip'];
 		$obj['act_name']     = $actName;
 		$obj['remark']       = $remark;
 		$obj['scene_id']     = $sceneId;
 		$url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
+
+		$this->debug(__FUNCTION__, $obj);
+
 		$result = $this->handle($url, $obj);
+
+		$this->debug(__FUNCTION__, $result);
 
 		return (array)simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
@@ -107,9 +117,9 @@ class WeixinService
 	 */
 	public function sendgroupredpack($openid, $totalAmount, $totalNum, $sender, $wishing, $actName, $remark, $sceneId='') {
 		$obj = array();
-		$obj['mch_billno']   = $this->wxConfig['mch_id'] . date('YmdHis') . rand(1000, 9999);
-		$obj['mch_id']       = $this->wxConfig['mch_id'];
-		$obj['wxappid']      = $this->wxConfig['app_id'];
+		$obj['mch_billno']   = $this->config['mch_id'] . date('YmdHis') . rand(1000, 9999);
+		$obj['mch_id']       = $this->config['mch_id'];
+		$obj['wxappid']      = $this->config['app_id'];
 		$obj['send_name']    = $sender;
 		$obj['re_openid']    = $openid;
 		$obj['total_amount'] = $totalAmount;
@@ -121,7 +131,12 @@ class WeixinService
 		$obj['remark']       = $remark;
 		$obj['scene_id']     = $sceneId;
 		$url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendgroupredpack";
+
+		$this->debug(__FUNCTION__, $obj);
+
 		$result = $this->handle($url, $obj);
+
+		$this->debug(__FUNCTION__, $result);
 
 		return (array)simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
@@ -135,16 +150,21 @@ class WeixinService
 		$obj = array();
 		$obj['mch_billno']   = $mchBillno;
 		// 微信支付分配的商户号
-		$obj['mch_id']       = $this->wxConfig['mch_id'];
+		$obj['mch_id']       = $this->config['mch_id'];
 		/**
 		 * 微信支付分配的公众帐号ID，接口传入的所有appid应该为公众号的appid（在mp.weixin.qq.com申请的），
 		 * 不能为APP的appid（在open.weixin.qq.com申请的）。
 		 */
-		$obj['appid']        = $this->wxConfig['app_id'];
+		$obj['appid']        = $this->config['app_id'];
 		// MCHT:通过商户订单号获取红包信息
 		$obj['bill_type']    = "MCHT";
 		$url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
+
+		$this->debug(__FUNCTION__, $obj);
+
 		$result = $this->handle($url, $obj);
+
+		$this->debug(__FUNCTION__, $result);
 
 		return (array)simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
@@ -156,11 +176,16 @@ class WeixinService
 	 */
 	public function gettransferinfo($partnerTradeNo) {
 		$obj = array();
-		$obj['appid']              = $this->wxConfig['app_id'];
-		$obj['mch_id']             = $this->wxConfig['mch_id'];
+		$obj['appid']              = $this->config['app_id'];
+		$obj['mch_id']             = $this->config['mch_id'];
 		$obj['partner_trade_no']   = $partnerTradeNo;
 		$url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo";
+
+		$this->debug(__FUNCTION__, $obj);
+
 		$result = $this->handle($url, $obj);
+
+		$this->debug(__FUNCTION__, $result);
 
 		return (array)simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
@@ -174,7 +199,7 @@ class WeixinService
 	private function handle($url, $obj) {
 		$obj['nonce_str'] = $this->create_noncestr();
 		$stringA = $this->formatQueryParaMap($obj, false);
-		$stringSignTemp = $stringA . "&key=". $this->wxConfig['key'];
+		$stringSignTemp = $stringA . "&key=". $this->config['key'];
 		$sign = strtoupper(md5($stringSignTemp));
 		$obj['sign'] = $sign;
 
@@ -199,9 +224,9 @@ class WeixinService
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-		curl_setopt($ch, CURLOPT_SSLCERT, __DIR__ . $this->wxConfig['ssl_cert_path']);
-		curl_setopt($ch, CURLOPT_SSLKEY, __DIR__ . $this->wxConfig['ssl_key_path']);
-		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . $this->wxConfig['ca_info_path']);
+		curl_setopt($ch, CURLOPT_SSLCERT, __DIR__ . $this->config['ssl_cert_path']);
+		curl_setopt($ch, CURLOPT_SSLKEY, __DIR__ . $this->config['ssl_key_path']);
+		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . $this->config['ca_info_path']);
 
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);

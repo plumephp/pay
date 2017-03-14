@@ -8,4 +8,4 @@ composer.lock
 .idea/
 LICENSE
 # phpunit
-phpunit.xml.dist
+# phpunit.xml.dist

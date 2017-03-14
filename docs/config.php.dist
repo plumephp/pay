@@ -1,16 +1,6 @@
 <?php
 
 return array(
-	//=======【数据库配置信息】=====================================
-	'db' => array(
-		'driver' => 'mysql',
-		'host' => 'localhost',
-		'username' => 'root',
-		'password' => 'root',
-		'database' => 'al_pay',
-		'port' => '3306',
-		'charset' => 'utf8'
-	),
 	//=======【微信配置信息】=======================================
     'weixin' => array(
 	    /**
