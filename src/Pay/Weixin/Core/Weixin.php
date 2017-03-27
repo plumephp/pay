@@ -224,9 +224,9 @@ class Weixin extends Application
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-		curl_setopt($ch, CURLOPT_SSLCERT, __DIR__ . $this->config['ssl_cert_path']);
-		curl_setopt($ch, CURLOPT_SSLKEY, __DIR__ . $this->config['ssl_key_path']);
-		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . $this->config['ca_info_path']);
+		curl_setopt($ch, CURLOPT_SSLCERT, $this->config['ssl_cert_path']);
+		curl_setopt($ch, CURLOPT_SSLKEY, $this->config['ssl_key_path']);
+		curl_setopt($ch, CURLOPT_CAINFO, $this->config['ca_info_path']);
 
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $vars);
